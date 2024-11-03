@@ -1,0 +1,8 @@
+Package: com.flaco510.iosimgui
+Name: Flaco
+Depends: mobilesubstrate
+Version: 2.0.0
+Architecture: iphoneos-arm
+Description: Simple ImGui Menu
+Maintainer: Flaco
+Author: Flaco
