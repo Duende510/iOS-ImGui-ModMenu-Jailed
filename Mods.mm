@@ -1,7 +1,7 @@
 #include "Mods.h"
 
 Mods mods;
-char* BinaryName = "qwe.qwe.sdd";
+char* BinaryName = "";
 
 /*
 bool *(*FunctionPointer)(void *) = nullptr;
