@@ -1,5 +1,7 @@
 # Jailed ImGui Mod Menu
 
+![Screenshot](menupic/screenshot.png)
+
 ## Requirements
 
 * Game's IPA file
