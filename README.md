@@ -80,7 +80,17 @@ TextInputMini("TextInput", mods.myText, false);
 ```
 HOOK(0x0000000, HookFunction, old_HookFunction);
 HOOKPTR(0x0000000, FunctionPointer);
-PATCHOFFSET(0x0000000, "00008052C0035FD6");
+PATCHOFFSET(0x0000000, "00008052C0035FD6", true);
+```
+
+* You can use PATCHOFFSET like this to make it toggleable
+```
+if (mods.bool1) {
+    PATCHOFFSET(0x0000000, "00008052C0035FD6", true);
+}else
+{
+    PATCHOFFSET(0x0000000, "00008052C0035FD6", false);
+}
 ```
 
 * When you hook or patch a function, you need to run your tweak in the app and then go to the files app in the On My IPhone directory and then go to your game's folder. Then in the static-inline-hook folder your patched binary will be there. Replace the old one in the IPA file with this one for the cheats to work. The cheats will do nothing until you replace the patched binary and re-sideload your app.

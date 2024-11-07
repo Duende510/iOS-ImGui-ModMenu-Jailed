@@ -19,6 +19,6 @@ void LoadMods()
   /*
   HOOK(0x0000000, HookFunction, old_HookFunction);
   HOOKPTR(0x0000000, FunctionPointer);
-  PATCHOFFSET(0x0000000, "00008052C0035FD6");
+  PATCHOFFSET(0x0000000, "00008052C0035FD6", true);
   */
 }

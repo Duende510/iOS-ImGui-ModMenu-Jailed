@@ -54,15 +54,16 @@ extern "C"
         *(void **)(&z) = (void *)result;                                  \
     }
 
-#define PATCHOFFSET(x, z)                                                     \
-    {                                                                         \
-        NSString *result_patch_##x = StaticInlineHookPatch(BinaryName, x, z); \
-        if (result_patch_##x)                                                 \
-        {                                                                     \
-            log(@"Hook result: %s", [result_patch_##x UTF8String]);           \
-            BOOL success = ActiveCodePatch(BinaryName, x, z);                 \
-            log(@"Patch result: %d", success);                                \
-        }                                                                     \
+#define PATCHOFFSET(x, z, active)                                                                            \
+    {                                                                                                        \
+        log(@"Attempting patch #%llx", x);                                                                   \
+        NSString *result_patch_##x = StaticInlineHookPatch(BinaryName, x, z);                                \
+        if (result_patch_##x)                                                                                \
+        {                                                                                                    \
+            log(@"Hook result for %llx: %s", x, [result_patch_##x UTF8String]);                              \
+            BOOL success = active ? ActiveCodePatch(BinaryName, x, z) : DeactiveCodePatch(BinaryName, x, z); \
+            log(@"Patch %s result for %llx: %d", active ? "activation" : "deactivation", x, success);        \
+        }                                                                                                    \
     }
 
 #ifdef __cplusplus
