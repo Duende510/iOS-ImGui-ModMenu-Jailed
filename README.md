@@ -86,10 +86,10 @@ PATCHOFFSET(0x0000000, "00008052C0035FD6", true);
 
 * You can use PATCHOFFSET like this to make it toggleable
 ```
-if (mods.bool1) {
-    PATCHOFFSET(0x0000000, "00008052C0035FD6", true);
-}else
+if (mods.bool1) 
 {
+    PATCHOFFSET(0x0000000, "00008052C0035FD6", true);
+}else{
     PATCHOFFSET(0x0000000, "00008052C0035FD6", false);
 }
 ```
