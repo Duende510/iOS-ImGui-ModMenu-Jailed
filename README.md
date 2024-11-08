@@ -8,6 +8,7 @@
 * Theos
 * Sideloadly
 * File sharing enabled on sideloadly
+* No JIT needed to run
 
 ### Setting Up
 
