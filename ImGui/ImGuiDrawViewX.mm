@@ -3,7 +3,7 @@
 #include "../Menu.h"
 #include "MenuUtils.h"
 
-@interface ImGuiDrawViewX () <MTKViewDelegate>
+@interface ImGuiDrawViewX () <MTKViewDelegate, UIKeyInput>
 @property (nonatomic, strong) id<MTLDevice> device;
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 
@@ -37,8 +37,8 @@ extern MenuInteraction* menuTouchView;
     ImGui::StyleColorsDark();
 
     ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-
+    io.KeyMap[ImGuiKey_Backspace] = 8;
+    
     [self addFontsToImGui:io];
     ImGui_ImplMetal_Init(_device);
 }
@@ -71,7 +71,7 @@ extern MenuInteraction* menuTouchView;
 }
 
 - (void)loadView {
-    CGRect frame = [UIScreen mainScreen].bounds; // Use screen bounds for view frame
+    CGRect frame = [UIScreen mainScreen].bounds;
     self.view = [[MTKView alloc] initWithFrame:frame];
 }
 
@@ -83,6 +83,16 @@ extern MenuInteraction* menuTouchView;
     self.mtkView.clearColor = MTLClearColorMake(0, 0, 0, 0);
     self.mtkView.backgroundColor = [UIColor clearColor];
     self.mtkView.clipsToBounds = YES;
+    
+    // Add keyboard notifications
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(keyboardWillShow:)
+                                               name:UIKeyboardWillShowNotification
+                                             object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(keyboardWillHide:)
+                                               name:UIKeyboardWillHideNotification
+                                             object:nil];
 }
 
 #pragma mark - Interaction
@@ -94,6 +104,17 @@ extern MenuInteraction* menuTouchView;
     ImGuiIO &io = ImGui::GetIO();
     io.MousePos = ImVec2(touchLocation.x, touchLocation.y);
     io.MouseDown[0] = (touch.phase != UITouchPhaseEnded && touch.phase != UITouchPhaseCancelled);
+
+    if (touch.phase == UITouchPhaseBegan && self.isKeyboardVisible) {
+        if (!io.WantTextInput) {
+            [self resignFirstResponder];
+            self.isKeyboardVisible = NO;
+        }
+    }
+
+    if (io.WantTextInput && !self.isKeyboardVisible) {
+        [self becomeFirstResponder];
+    }
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
@@ -136,7 +157,7 @@ extern MenuInteraction* menuTouchView;
         SetStyles();
 
         if (menuVisible) {
-
+            
             ImGui::Begin("##Noname",  NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
             MenuOrigin = ImGui::GetWindowPos();
             MenuSize = ImGui::GetWindowSize();
@@ -166,6 +187,59 @@ extern MenuInteraction* menuTouchView;
 
 - (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size {
 
+}
+
+- (BOOL)hasText {
+    return YES;
+}
+
+- (void)insertText:(NSString *)text {
+    if ([text isEqualToString:@"\n"]) {
+        [self resignFirstResponder];
+        self.isKeyboardVisible = NO;
+        return;
+    }
+    
+    ImGuiIO &io = ImGui::GetIO();
+    NSData *data = [text dataUsingEncoding:NSUTF8StringEncoding];
+    io.AddInputCharactersUTF8((const char*)[data bytes]);
+}
+
+- (void)deleteBackward {
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.KeysDown[io.KeyMap[ImGuiKey_Backspace]] = true;
+    io.KeysDown[8] = true;
+  
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.016 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        io.KeysDown[io.KeyMap[ImGuiKey_Backspace]] = false;
+        io.KeysDown[8] = false;
+    });
+}
+
+- (BOOL)canBecomeFirstResponder {
+    return YES;
+}
+
+- (void)keyboardWillShow:(NSNotification *)notification {
+    self.isKeyboardVisible = YES;
+}
+
+- (void)keyboardWillHide:(NSNotification *)notification {
+    self.isKeyboardVisible = NO;
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    if ([string isEqualToString:@"\n"]) {
+        [self resignFirstResponder];
+        self.isKeyboardVisible = NO;
+        return NO;
+    }
+    return YES;
 }
 
 @end

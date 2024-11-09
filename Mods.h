@@ -16,6 +16,7 @@
 struct Mods {
     bool bool1 = false, bool2 = false, bool3 = false;
     std::string myText = "Initial Text";
+    std::string inputText = "";
     float floatVal = 0;
     int intval = 0, intval2 = 0;
 };

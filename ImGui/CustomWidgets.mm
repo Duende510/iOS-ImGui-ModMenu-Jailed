@@ -44,33 +44,6 @@ void LightTheme()
   }
 }
 
-void ShowKeyboard(NSString* title, NSString* message, std::string& outString, BOOL allowOnlyNumbers)
-{
-    SCLAlertView *keyboardAlert = [[SCLAlertView alloc] initWithNewWindow];
-
-    UITextField *inputField = [keyboardAlert addTextField:@"Custom Input"];
-    inputField.layer.cornerRadius = 5.0f;
-    inputField.borderStyle = UITextBorderStyleNone;
-    inputField.keyboardType = allowOnlyNumbers ? UIKeyboardTypeNumberPad : UIKeyboardTypeDefault;
-    inputField.text = [NSString stringWithUTF8String:outString.c_str()];
-    inputField.clearButtonMode = UITextFieldViewModeWhileEditing;
-    inputField.backgroundColor = UIColorFromRGBA(ChildColor[0], ChildColor[1], ChildColor[2], 1.0);
-    inputField.textColor = UIColorFromRGBA(InactiveTextColor[0], InactiveTextColor[1], InactiveTextColor[2], 1.0);
-
-    [keyboardAlert addButton:NSSENCRYPT("Done") actionBlock:^{
-        NSString *input = inputField.text;
-        outString = std::string([input UTF8String]);
-    }];
-
-    keyboardAlert.shouldDismissOnTapOutside = YES;
-    keyboardAlert.customViewColor = UIColorFromRGBA(ChildColor[0], ChildColor[1], ChildColor[2], 1.0);
-    keyboardAlert.backgroundViewColor = UIColorFromRGBA(BGColor[0], BGColor[1], BGColor[2], 1.0);
-    keyboardAlert.iconTintColor = UIColorFromRGBA(InactiveTextColor[0], InactiveTextColor[1], InactiveTextColor[2], 1.0);
-    keyboardAlert.showAnimationType = SCLAlertViewShowAnimationFadeIn;
-
-    [keyboardAlert showEdit:title subTitle:message closeButtonTitle:nil duration:0.0];
-}
-
 void CopyToClipboard(const char* text)
 {
     UIPasteboard* pasteboard = [UIPasteboard generalPasteboard];
@@ -241,7 +214,7 @@ bool ToggleButton(const char* label, bool* v)
     draw_list->AddRectFilled(ImVec2(p.x, p.y), ImVec2(p.x + toggleWidth, p.y + toggleHeight), backgroundColor, toggleHeight * 0.5f);
 
     ImU32 circleColor = (toggleStates[id]) ? IM_COL32(ActiveTextColor[0], ActiveTextColor[1], ActiveTextColor[2], animation_text) : IM_COL32(InactiveTextColor[0], InactiveTextColor[1], InactiveTextColor[2], animation_text);
-    draw_list->AddCircleFilled(ImVec2(circlePosX, p.y + circleRadius + 1), circleRadius - 2.0f, circleColor);
+    draw_list->AddCircleFilled(ImVec2(circlePosX, p.y + circleRadius + 1), circleRadius - 2.0f, circleColor, 32);
 
     bool clicked = ImGui::InvisibleButton(label, ImVec2(toggleWidth, toggleHeight));
 
@@ -320,7 +293,7 @@ bool ToggleButtonMini(const char* label, bool* v)
     draw_list->AddRectFilled(ImVec2(toggleBackgroundX, toggleBackgroundY), ImVec2(toggleBackgroundX + toggleWidth, toggleBackgroundY + toggleHeight), backgroundColor, toggleHeight * 0.5f);
 
     ImU32 circleColor = toggleStates[id] ? IM_COL32(ActiveTextColor[0], ActiveTextColor[1], ActiveTextColor[2], animation_text) : IM_COL32(InactiveTextColor[0], InactiveTextColor[1], InactiveTextColor[2], animation_text);
-    draw_list->AddCircleFilled(ImVec2(circlePosX, toggleBackgroundY + circleRadius + 1), circleRadius - 2.0f, circleColor);
+    draw_list->AddCircleFilled(ImVec2(circlePosX, toggleBackgroundY + circleRadius + 1), circleRadius - 2.0f, circleColor, 32);
 
     return toggled;
 }
@@ -427,7 +400,9 @@ bool TextInputMini(const char* label, std::string& text, bool integerOnly)
     const float inputWidth = 100.0f;
     const float gap = 5.0f;
     const float verticalOffset = -18.0f;
-    std::string textInputID = "##textInputID_" + std::string(label);
+    
+    // Create a unique ID using both the label and the memory address of the text string
+    std::string textInputID = "##textInput_" + std::string(label) + "_" + std::to_string((uintptr_t)&text);
 
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + gap);
 
@@ -443,20 +418,22 @@ bool TextInputMini(const char* label, std::string& text, bool integerOnly)
 
     ImGui::SetNextItemWidth(inputWidth);
 
-    ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_FrameBg));
-
-    if (ImGui::Button(text.c_str(), ImVec2(inputWidth, 20.0f)))
-    {
-        NSString* title = @"Custom Input";
-        NSString* message = @"";
-        ShowKeyboard(title, message, text, integerOnly);
+    // Create a buffer for the input text
+    static std::unordered_map<std::string, char[256]> buffers;
+    if (buffers.find(textInputID) == buffers.end()) {
+        strcpy(buffers[textInputID], text.c_str());
     }
+    
+    ImGuiInputTextFlags flags = ImGuiInputTextFlags_None;
+    if (integerOnly)
+        flags |= ImGuiInputTextFlags_CharsDecimal;
 
-    ImGui::PopStyleColor(3);
+    bool changed = ImGui::InputText(textInputID.c_str(), buffers[textInputID], 256, flags);
+    
+    if (changed)
+        text = buffers[textInputID];
 
-    return false;
+    return changed;
 }
 
 Console* Console::instance = nullptr;

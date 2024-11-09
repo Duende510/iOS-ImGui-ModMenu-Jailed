@@ -8,6 +8,7 @@
 * Theos
 * Sideloadly
 * File sharing enabled on sideloadly
+* No JIT needed to run
 
 ### Setting Up
 
@@ -85,10 +86,10 @@ PATCHOFFSET(0x0000000, "00008052C0035FD6", true);
 
 * You can use PATCHOFFSET like this to make it toggleable
 ```
-if (mods.bool1) {
-    PATCHOFFSET(0x0000000, "00008052C0035FD6", true);
-}else
+if (mods.bool1) 
 {
+    PATCHOFFSET(0x0000000, "00008052C0035FD6", true);
+}else{
     PATCHOFFSET(0x0000000, "00008052C0035FD6", false);
 }
 ```
@@ -101,8 +102,16 @@ if (mods.bool1) {
 * Hooking from ItsPow45
 * I made all the widgets, menu ui, icon animations, ptr and patch macro
 
-
 ## Version History
 
 * 0.1
     * Initial Release
+
+* 0.2
+    * Added Toggleable Patching
+    * Fixed Monostring Struct
+    * Added Obscured Types to Unity.h
+
+* 0.3
+    * Added Text Input Support (Shows Keyboard, Returns & Deletes Text)
+    * Added Placeholder Menu Icon

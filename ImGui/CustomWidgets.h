@@ -21,7 +21,6 @@
 using namespace std;
 
 void LightTheme();
-void ShowKeyboard(NSString* title, NSString* message, std::string& outString, BOOL allowOnlyNumbers);
 void saveSettings(const char* label, bool value);
 bool loadSettings(const char* label, bool defaultValue);
 bool ToggleButton(const char* label, bool* v);
