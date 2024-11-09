@@ -197,6 +197,8 @@ extern MenuInteraction* menuTouchView;
     if ([text isEqualToString:@"\n"]) {
         [self resignFirstResponder];
         self.isKeyboardVisible = NO;
+
+        ImGui::SetWindowFocus(NULL);
         return;
     }
     
