@@ -101,6 +101,7 @@ if (mods.bool1)
 * This is a heavily modified version of CarsonArk's template
 * Hooking from ItsPow45
 * I made all the widgets, menu ui, icon animations, ptr and patch macro
+* #ModzTeam2025
 
 ## Version History
 
